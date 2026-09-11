@@ -76,7 +76,7 @@ func runSFlowCollector(addr string) {
 
 	buf := make([]byte, 65535)
 	for {
-		n, _, err := conn.ReadFromUDP(buf)
+		n, raddr, err := conn.ReadFromUDP(buf)
 		if err != nil {
 			log.Printf("sflow: read error: %v", err)
 			continue
@@ -94,7 +94,7 @@ func runSFlowCollector(addr string) {
 			continue
 		}
 		for _, msg := range flowMessages {
-			RecordFlow(msg, "sflow")
+			RecordFlow(msg, "sflow", raddr.IP)
 		}
 	}
 }
@@ -134,7 +134,7 @@ func runNetFlowCollector(addr string) {
 				continue
 			}
 			for _, msg := range msgs {
-				RecordFlow(msg, "netflow9")
+				RecordFlow(msg, "netflow9", raddr.IP)
 			}
 		case packetIPFIX.Version == 10:
 			msgs, err := protoproducer.ProcessMessageIPFIXConfig(&packetIPFIX, samplingRates, nil)
@@ -143,7 +143,7 @@ func runNetFlowCollector(addr string) {
 				continue
 			}
 			for _, msg := range msgs {
-				RecordFlow(msg, "ipfix")
+				RecordFlow(msg, "ipfix", raddr.IP)
 			}
 		}
 	}

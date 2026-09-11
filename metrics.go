@@ -40,6 +40,8 @@ func protoName(proto uint32) string {
 		return "tcp"
 	case 17:
 		return "udp"
+	case 47:
+		return "gre"
 	case 58:
 		return "icmpv6"
 	default:
@@ -49,10 +51,17 @@ func protoName(proto uint32) string {
 
 // RecordFlow updates Prometheus metrics from a single decoded flow message.
 // sourceType is a short label such as "sflow", "netflow9", or "ipfix".
-func RecordFlow(msg interface{}, sourceType string) {
+// fallbackSampler is used as the sampler address when the message itself
+// doesn't carry one (e.g. NetFlow v9/IPFIX, decoded without a producer.ProduceArgs).
+func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP) {
 	pm, ok := msg.(*protoproducer.ProtoProducerMessage)
 	if !ok {
 		return
+	}
+
+	samplerAddr := net.IP(pm.SamplerAddress)
+	if samplerAddr == nil {
+		samplerAddr = fallbackSampler
 	}
 
 	inIf := strconv.FormatUint(uint64(pm.InIf), 10)
@@ -70,5 +79,5 @@ func RecordFlow(msg interface{}, sourceType string) {
 
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Bytes) * float64(samplingRate))
 	flowPacketsTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Packets) * float64(samplingRate))
-	flowSamplesTotal.WithLabelValues(sourceType, net.IP(pm.SamplerAddress).String()).Inc()
+	flowSamplesTotal.WithLabelValues(sourceType, samplerAddr.String()).Inc()
 }
