@@ -61,7 +61,14 @@ func RecordFlow(msg interface{}, sourceType string) {
 	srcAs := strconv.FormatUint(uint64(pm.SrcAs), 10)
 	dstAs := strconv.FormatUint(uint64(pm.DstAs), 10)
 
-	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Bytes))
-	flowPacketsTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Packets))
+	// Each sample represents one packet out of every SamplingRate packets seen
+	// by the exporter; multiply back up to estimate real traffic volume.
+	samplingRate := pm.SamplingRate
+	if samplingRate == 0 {
+		samplingRate = 1
+	}
+
+	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Bytes) * float64(samplingRate))
+	flowPacketsTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Packets) * float64(samplingRate))
 	flowSamplesTotal.WithLabelValues(sourceType, net.IP(pm.SamplerAddress).String()).Inc()
 }
