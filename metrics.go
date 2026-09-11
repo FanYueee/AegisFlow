@@ -1,12 +1,16 @@
 package main
 
 import (
+	"log"
 	"net"
+	"os"
 	"strconv"
 
 	protoproducer "github.com/netsampler/goflow2/v2/producer/proto"
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+var debugFlows = os.Getenv("AEGISFLOW_DEBUG") != ""
 
 var (
 	flowBytesTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -53,7 +57,10 @@ func protoName(proto uint32) string {
 // sourceType is a short label such as "sflow", "netflow9", or "ipfix".
 // fallbackSampler is used as the sampler address when the message itself
 // doesn't carry one (e.g. NetFlow v9/IPFIX, decoded without a producer.ProduceArgs).
-func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP) {
+// fallbackSamplingRate is applied when the message doesn't report its own
+// sampling rate — e.g. MikroTik's packet-sampling doesn't announce its ratio
+// over the protocol, so it has to be supplied out of band.
+func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fallbackSamplingRate uint64) {
 	pm, ok := msg.(*protoproducer.ProtoProducerMessage)
 	if !ok {
 		return
@@ -74,7 +81,12 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP) {
 	// by the exporter; multiply back up to estimate real traffic volume.
 	samplingRate := pm.SamplingRate
 	if samplingRate == 0 {
-		samplingRate = 1
+		samplingRate = fallbackSamplingRate
+	}
+
+	if debugFlows {
+		log.Printf("debug flow: type=%s in_if=%s out_if=%s proto=%s bytes=%d packets=%d sampling_rate=%d src=%s dst=%s",
+			sourceType, inIf, outIf, proto, pm.Bytes, pm.Packets, pm.SamplingRate, net.IP(pm.SrcAddr), net.IP(pm.DstAddr))
 	}
 
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(float64(pm.Bytes) * float64(samplingRate))

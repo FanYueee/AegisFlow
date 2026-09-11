@@ -21,6 +21,12 @@ var (
 	sflowAddr   = flag.String("sflow-listen", ":6343", "UDP address to listen for sFlow on")
 	netflowAddr = flag.String("netflow-listen", ":2055", "UDP address to listen for NetFlow v9/IPFIX on")
 	metricsAddr = flag.String("metrics-listen", ":2112", "HTTP address to expose Prometheus metrics on")
+
+	// netflowSamplingRate is applied to NetFlow/IPFIX flows that don't report
+	// their own sampling rate over the protocol. Some exporters (e.g. MikroTik
+	// RouterOS packet-sampling) sample without ever announcing the ratio, so
+	// it has to be supplied manually to avoid undercounting traffic.
+	netflowSamplingRate = flag.Uint64("netflow-sampling-rate", 2, "fallback sampling rate for NetFlow/IPFIX flows that don't announce their own (e.g. MikroTik packet-sampling)")
 )
 
 // templateStore holds one NetFlow/IPFIX template system per exporter, since
@@ -94,7 +100,7 @@ func runSFlowCollector(addr string) {
 			continue
 		}
 		for _, msg := range flowMessages {
-			RecordFlow(msg, "sflow", raddr.IP)
+			RecordFlow(msg, "sflow", raddr.IP, 1)
 		}
 	}
 }
@@ -134,7 +140,7 @@ func runNetFlowCollector(addr string) {
 				continue
 			}
 			for _, msg := range msgs {
-				RecordFlow(msg, "netflow9", raddr.IP)
+				RecordFlow(msg, "netflow9", raddr.IP, *netflowSamplingRate)
 			}
 		case packetIPFIX.Version == 10:
 			msgs, err := protoproducer.ProcessMessageIPFIXConfig(&packetIPFIX, samplingRates, nil)
@@ -143,7 +149,7 @@ func runNetFlowCollector(addr string) {
 				continue
 			}
 			for _, msg := range msgs {
-				RecordFlow(msg, "ipfix", raddr.IP)
+				RecordFlow(msg, "ipfix", raddr.IP, *netflowSamplingRate)
 			}
 		}
 	}
