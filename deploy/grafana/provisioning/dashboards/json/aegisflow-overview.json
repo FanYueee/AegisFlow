@@ -675,13 +675,14 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "最新完成的 1 秒收件視窗，顯示最新值，不使用 5 分鐘 rate 或 Mean/Max。sFlow 是封包取樣乘倍率的估計；NetFlow 是該秒到達的 flow 匯出總量，不是該秒線上 TCP 封包量或單包旗標。資料來源可由上方選擇。超過 3 秒未更新或視窗異常會留白。",
+      "description": "依完整 TCP 旗標組合統計，使用與上方相同的 5 分鐘 rate；動態顯示前 8 組。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "decimals": 3,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -696,7 +697,40 @@
             ]
           },
           "unit": "suffix:bps",
-          "min": 0
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
         },
         "overrides": [
           {
@@ -724,15 +758,19 @@
       },
       "id": 12,
       "options": {
-        "orientation": "horizontal",
-        "displayMode": "basic",
-        "showUnfilled": true,
-        "reduceOptions": {
-          "values": true,
-          "fields": "",
+        "legend": {
           "calcs": [
-            "lastNotNull"
-          ]
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "13.2.1",
@@ -742,29 +780,29 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "topk(8, sum by (combination, classification) (flow_tcp_flag_combination_current_bps{scope=\"$tcp_scope\"})) and on() (time() - max(aegisflow_current_window_end_seconds) < 3) and on() (max(aegisflow_current_window_duration_seconds) < 1.5)",
+          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[5m])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[5m] @ end())))) * 8",
+          "instant": false,
           "legendFormat": "{{combination}}",
-          "refId": "A",
-          "interval": "1s",
-          "instant": true,
-          "range": false
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "tcp flag 頻寬",
-      "type": "bargauge"
+      "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "最新完成的 1 秒收件視窗，顯示最新值，不使用 5 分鐘 rate 或 Mean/Max。sFlow 是封包取樣乘倍率的估計；NetFlow 是該秒到達的 flow 匯出總量，不是該秒線上 TCP 封包量或單包旗標。資料來源可由上方選擇。超過 3 秒未更新或視窗異常會留白。",
+      "description": "依完整 TCP 旗標組合統計，使用與上方相同的 5 分鐘 rate；動態顯示前 8 組。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
-          "decimals": 0,
+          "decimals": 4,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -779,7 +817,40 @@
             ]
           },
           "unit": "suffix:pps",
-          "min": 0
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          }
         },
         "overrides": [
           {
@@ -807,15 +878,19 @@
       },
       "id": 13,
       "options": {
-        "orientation": "horizontal",
-        "displayMode": "basic",
-        "showUnfilled": true,
-        "reduceOptions": {
-          "values": true,
-          "fields": "",
+        "legend": {
           "calcs": [
-            "lastNotNull"
-          ]
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "pluginVersion": "13.2.1",
@@ -825,21 +900,49 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "topk(8, sum by (combination, classification) (flow_tcp_flag_combination_current_pps{scope=\"$tcp_scope\"})) and on() (time() - max(aegisflow_current_window_end_seconds) < 3) and on() (max(aegisflow_current_window_duration_seconds) < 1.5)",
+          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[5m])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[5m] @ end()))))",
+          "instant": false,
           "legendFormat": "{{combination}}",
-          "refId": "A",
-          "interval": "1s",
-          "instant": true,
-          "range": false
+          "range": true,
+          "refId": "A"
         }
       ],
       "title": "tcp flag",
-      "type": "bargauge"
+      "type": "timeseries"
     }
   ],
   "preload": false,
   "refresh": "5s",
   "schemaVersion": 42,
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "NetFlow 累積",
+          "value": "flow"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "TCP 資料來源",
+        "multi": false,
+        "name": "tcp_scope",
+        "options": [
+          {
+            "selected": true,
+            "text": "NetFlow 累積",
+            "value": "flow"
+          },
+          {
+            "selected": false,
+            "text": "sFlow 封包取樣",
+            "value": "packet"
+          }
+        ],
+        "query": "NetFlow 累積 : flow,sFlow 封包取樣 : packet",
+        "type": "custom"
+      }
+    ]
+  },
   "time": {
     "from": "now-15m",
     "to": "now"
@@ -861,34 +964,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 16,
-  "templating": {
-    "list": [
-      {
-        "name": "tcp_scope",
-        "label": "TCP 資料來源",
-        "type": "custom",
-        "query": "NetFlow 累積 : flow,sFlow 封包取樣 : packet",
-        "current": {
-          "text": "NetFlow 累積",
-          "value": "flow"
-        },
-        "options": [
-          {
-            "text": "NetFlow 累積",
-            "value": "flow",
-            "selected": true
-          },
-          {
-            "text": "sFlow 封包取樣",
-            "value": "packet",
-            "selected": false
-          }
-        ],
-        "multi": false,
-        "includeAll": false,
-        "hide": 0
-      }
-    ]
-  }
+  "version": 17
 }
