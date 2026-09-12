@@ -3,7 +3,7 @@
 <body>
 <header><h1>AegisFlow 控制台</h1><a id="grafana" target="_blank" rel="noopener">Grafana 詳細圖表 ↗</a></header>
 <p id="connection" role="status">連線中…</p><p id="message" role="alert" hidden></p>
-<section><h2>流量觀察</h2><p>每秒更新，顯示近 5 秒平均；流量依設備取樣倍率估算。圖表保留本次啟動後近 5 分鐘。</p>
+<section><h2>流量觀察</h2><p>每秒更新，顯示最近一個完成的 1 秒收件視窗；取樣資料依倍率估算，NetFlow 為該秒收到的累積匯出量。圖表保留本次啟動後近 5 分鐘。</p>
 <div class="stats"><div>總頻寬<strong id="bps">—</strong></div><div>每秒封包<strong id="pps">—</strong></div><div>每秒樣本<strong id="samples">—</strong></div><div>最後收件<strong id="lastFlow">—</strong></div></div>
 <p id="overflow" hidden></p>
 <div class="columns"><div><h3>頻寬</h3><canvas id="bandwidth" width="640" height="180" aria-label="近五分鐘頻寬趨勢" role="img"></canvas></div><div><h3>封包</h3><canvas id="packets" width="640" height="180" aria-label="近五分鐘封包速率趨勢" role="img"></canvas></div></div>

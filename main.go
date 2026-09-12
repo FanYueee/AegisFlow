@@ -19,6 +19,7 @@ import (
 	"github.com/netsampler/goflow2/v2/decoders/netflow"
 	"github.com/netsampler/goflow2/v2/decoders/sflow"
 	protoproducer "github.com/netsampler/goflow2/v2/producer/proto"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -97,6 +98,9 @@ func main() {
 
 func serveMetrics(addr string) {
 	http.Handle("/metrics", promhttp.Handler())
+	realtime := prometheus.NewRegistry()
+	realtime.MustRegister(newRealtimeCollector(liveObserver))
+	http.Handle("/metrics/realtime", promhttp.HandlerFor(realtime, promhttp.HandlerOpts{}))
 	log.Printf("serving Prometheus metrics on %s/metrics", addr)
 	if err := http.ListenAndServe(addr, nil); err != nil {
 		log.Fatalf("metrics server: %v", err)

@@ -97,7 +97,7 @@ func (o *Observer) rotate(now time.Time) {
 	o.bucket.duration = now.Sub(o.timeStart).Seconds()
 	o.timeStart = now
 	o.recent = append(o.recent, o.bucket)
-	if len(o.recent) > 5 {
+	if len(o.recent) > 1 {
 		o.recent = o.recent[1:]
 	}
 	o.bucket = emptyBucket()
