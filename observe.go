@@ -26,14 +26,26 @@ type TrafficView struct {
 	History       []TrafficPoint `json:"history"`
 	Destinations  []TrafficRow   `json:"destinations"`
 	Protocols     []TrafficRow   `json:"protocols"`
-	Flags         []TrafficRow   `json:"flags"`
+	Flags         []TCPFlagRow   `json:"flags"`
+	FlowFlags     []TCPFlagRow   `json:"flow_flags"`
 	Overflow      uint64         `json:"overflow"`
 	WindowSeconds float64        `json:"window_seconds"`
 }
+type TCPFlagRow struct {
+	TCPFlagInfo
+	Source string `json:"source"`
+	Rates
+}
+type flagKey struct {
+	Source string
+	Mask   uint32
+	Known  bool
+}
 type trafficBucket struct {
-	duration                       float64
-	total                          Rates
-	destinations, protocols, flags map[string]Rates
+	duration                float64
+	total                   Rates
+	destinations, protocols map[string]Rates
+	flags                   map[flagKey]Rates
 }
 type Observer struct {
 	mu                  sync.Mutex
@@ -45,7 +57,7 @@ type Observer struct {
 }
 
 func emptyBucket() trafficBucket {
-	return trafficBucket{destinations: map[string]Rates{}, protocols: map[string]Rates{}, flags: map[string]Rates{}}
+	return trafficBucket{destinations: map[string]Rates{}, protocols: map[string]Rates{}, flags: map[flagKey]Rates{}}
 }
 func newObserver() *Observer {
 	return &Observer{bucket: emptyBucket(), timeStart: time.Now(), history: []TrafficPoint{}}
@@ -57,7 +69,7 @@ func divide(a Rates, n float64) Rates {
 	}
 	return Rates{a.BPS / n, a.PPS / n, a.Samples / n}
 }
-func (o *Observer) Record(cidr, proto string, flags uint32, bytes, packets float64) {
+func (o *Observer) Record(cidr, proto string, flags TCPFlagObservation, bytes, packets float64, source string) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	o.lastFlow = time.Now()
@@ -72,11 +84,11 @@ func (o *Observer) Record(cidr, proto string, flags uint32, bytes, packets float
 		}
 	}
 	if proto == "tcp" {
-		for _, f := range tcpFlagBits {
-			if flags&f.mask != 0 {
-				o.bucket.flags[f.name] = addRates(o.bucket.flags[f.name], r)
-			}
+		if !flags.Known || flags.Mask > 0xfff {
+			flags = TCPFlagObservation{}
 		}
+		key := flagKey{source, flags.Mask, flags.Known}
+		o.bucket.flags[key] = addRates(o.bucket.flags[key], r)
 	}
 }
 func (o *Observer) rotate(now time.Time) {
@@ -120,11 +132,33 @@ func topRows(values map[string]Rates, seconds float64) []TrafficRow {
 	}
 	return rows
 }
+func topFlagRows(values map[flagKey]Rates, seconds float64, scope string) []TCPFlagRow {
+	rows := make([]TCPFlagRow, 0)
+	for k, r := range values {
+		if flagScope(k.Source) != scope {
+			continue
+		}
+		rows = append(rows, TCPFlagRow{classifyTCPFlags(k.Mask, scope, k.Known), k.Source, divide(r, seconds)})
+	}
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].BPS != rows[j].BPS {
+			return rows[i].BPS > rows[j].BPS
+		}
+		if rows[i].Combination != rows[j].Combination {
+			return rows[i].Combination < rows[j].Combination
+		}
+		return rows[i].Source < rows[j].Source
+	})
+	if len(rows) > 8 {
+		rows = rows[:8]
+	}
+	return rows
+}
 func (o *Observer) Snapshot() TrafficView {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	total, seconds := o.current()
-	dst, protos, flags := map[string]Rates{}, map[string]Rates{}, map[string]Rates{}
+	dst, protos, flags := map[string]Rates{}, map[string]Rates{}, map[flagKey]Rates{}
 	for _, b := range o.recent {
 		for n, r := range b.destinations {
 			dst[n] = addRates(dst[n], r)
@@ -136,7 +170,7 @@ func (o *Observer) Snapshot() TrafficView {
 			flags[n] = addRates(flags[n], r)
 		}
 	}
-	return TrafficView{Current: divide(total, seconds), LastFlow: o.lastFlow, History: append([]TrafficPoint{}, o.history...), Destinations: topRows(dst, seconds), Protocols: topRows(protos, seconds), Flags: topRows(flags, seconds), Overflow: o.overflow, WindowSeconds: seconds}
+	return TrafficView{Current: divide(total, seconds), LastFlow: o.lastFlow, History: append([]TrafficPoint{}, o.history...), Destinations: topRows(dst, seconds), Protocols: topRows(protos, seconds), Flags: topFlagRows(flags, seconds, "packet"), FlowFlags: topFlagRows(flags, seconds, "flow"), Overflow: o.overflow, WindowSeconds: seconds}
 }
 func (o *Observer) Run(ctx context.Context) {
 	ticker := time.NewTicker(time.Second)

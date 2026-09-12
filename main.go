@@ -128,8 +128,9 @@ func runSFlowCollector(addr string) {
 			log.Printf("sflow: producer error: %v", err)
 			continue
 		}
-		for _, msg := range flowMessages {
-			RecordFlow(msg, "sflow", raddr.IP, 1)
+		samples := protoproducer.GetSFlowFlowSamples(&packet)
+		for i, msg := range flowMessages {
+			RecordFlow(msg, "sflow", raddr.IP, 1, sflowTCPFlags(samples[i]))
 		}
 	}
 }

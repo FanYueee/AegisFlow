@@ -47,22 +47,21 @@ var (
 		Help: "Total packets seen per destination CIDR bucket.",
 	}, []string{"dst_cidr"})
 
-	flowTCPFlagBytesTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "flow_tcp_flag_bytes_total",
-		Help: "Sampling-adjusted bytes in flows or packet samples reporting each TCP flag; NetFlow/IPFIX counts entire flows, not exact per-flag packet bytes. Flags overlap.",
-	}, []string{"flag"})
-
-	flowTCPFlagPacketsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "flow_tcp_flag_packets_total",
-		Help: "Sampling-adjusted packets in flows or packet samples reporting each TCP flag; NetFlow/IPFIX counts entire flows, not exact per-flag packets. Flags overlap.",
-	}, []string{"flag"})
+	flowTCPCombinationBytesTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "flow_tcp_flag_combination_bytes_total",
+		Help: "Sampling-adjusted bytes counted once per complete TCP flag combination. scope=packet is an sFlow packet sample; scope=flow is an aggregate, not per-packet flags.",
+	}, []string{"source", "scope", "combination", "classification"})
+	flowTCPCombinationPacketsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "flow_tcp_flag_combination_packets_total",
+		Help: "Sampling-adjusted packets counted once per complete flag combination. Flow aggregates cannot establish individual packet flag combinations or legality.",
+	}, []string{"source", "scope", "combination", "classification"})
 )
 
 func init() {
 	prometheus.MustRegister(
 		flowBytesTotal, flowPacketsTotal, flowSamplesTotal,
 		flowDstCIDRBytesTotal, flowDstCIDRPacketsTotal,
-		flowTCPFlagBytesTotal, flowTCPFlagPacketsTotal,
+		flowTCPCombinationBytesTotal, flowTCPCombinationPacketsTotal,
 	)
 }
 
@@ -81,21 +80,6 @@ func protoName(proto uint32) string {
 	default:
 		return "other"
 	}
-}
-
-// tcpFlagBits lists the standard TCP flags in header bit order.
-var tcpFlagBits = []struct {
-	mask uint32
-	name string
-}{
-	{0x01, "FIN"},
-	{0x02, "SYN"},
-	{0x04, "RST"},
-	{0x08, "PSH"},
-	{0x10, "ACK"},
-	{0x20, "URG"},
-	{0x40, "ECE"},
-	{0x80, "CWR"},
 }
 
 // dstCIDR buckets an IP address down to a fixed-length prefix so it can be
@@ -119,9 +103,9 @@ func dstCIDR(ip net.IP) string {
 // fallbackSamplingRate is applied when the message doesn't report its own
 // sampling rate — e.g. MikroTik's packet-sampling doesn't announce its ratio
 // over the protocol, so it has to be supplied out of band.
-func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fallbackSamplingRate uint64) {
+func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fallbackSamplingRate uint64, observedFlags ...TCPFlagObservation) {
 	pm, ok := msg.(*protoproducer.ProtoProducerMessage)
-	if !ok {
+	if !ok || pm == nil {
 		return
 	}
 
@@ -150,7 +134,11 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 			sourceType, inIf, outIf, proto, pm.Bytes, pm.Packets, pm.SamplingRate, net.IP(pm.SrcAddr), net.IP(pm.DstAddr))
 	}
 
-	liveObserver.Record(dstCIDR(net.IP(pm.DstAddr)), proto, pm.TcpFlags, bytes, packets)
+	flags := TCPFlagObservation{pm.TcpFlags, pm.TcpFlags != 0}
+	if len(observedFlags) > 0 {
+		flags = observedFlags[0]
+	}
+	liveObserver.Record(dstCIDR(net.IP(pm.DstAddr)), proto, flags, bytes, packets, sourceType)
 
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(bytes)
 	flowPacketsTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(packets)
@@ -161,14 +149,10 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 		flowDstCIDRPacketsTotal.WithLabelValues(cidr).Add(packets)
 	}
 
-	// NetFlow/IPFIX flags are flow-wide unions. Attribute full flow volume
-	// to each present bit; this is not an exact count of flagged packets.
 	if proto == "tcp" {
-		for _, f := range tcpFlagBits {
-			if pm.TcpFlags&f.mask != 0 {
-				flowTCPFlagBytesTotal.WithLabelValues(f.name).Add(bytes)
-				flowTCPFlagPacketsTotal.WithLabelValues(f.name).Add(packets)
-			}
-		}
+		scope := flagScope(sourceType)
+		info := classifyTCPFlags(flags.Mask, scope, flags.Known)
+		flowTCPCombinationBytesTotal.WithLabelValues(sourceType, scope, info.Combination, info.Verdict).Add(bytes)
+		flowTCPCombinationPacketsTotal.WithLabelValues(sourceType, scope, info.Combination, info.Verdict).Add(packets)
 	}
 }

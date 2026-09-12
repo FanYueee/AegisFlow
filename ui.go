@@ -17,6 +17,7 @@ var webFiles embed.FS
 
 func controlHandler(c *Controller, o *Observer) http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/tcp-flag-rules", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, tcpFlagRules) })
 	mux.HandleFunc("GET /api/state", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, c.Snapshot()) })
 	mux.HandleFunc("GET /api/traffic", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, o.Snapshot()) })
 	mux.HandleFunc("PUT /api/settings", func(w http.ResponseWriter, r *http.Request) {

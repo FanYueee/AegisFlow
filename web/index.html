@@ -7,7 +7,10 @@
 <div class="stats"><div>總頻寬<strong id="bps">—</strong></div><div>每秒封包<strong id="pps">—</strong></div><div>每秒樣本<strong id="samples">—</strong></div><div>最後收件<strong id="lastFlow">—</strong></div></div>
 <p id="overflow" hidden></p>
 <div class="columns"><div><h3>頻寬</h3><canvas id="bandwidth" width="640" height="180" aria-label="近五分鐘頻寬趨勢" role="img"></canvas></div><div><h3>封包</h3><canvas id="packets" width="640" height="180" aria-label="近五分鐘封包速率趨勢" role="img"></canvas></div></div>
-<div class="columns"><div><h3>目的網段</h3><table><thead><tr><th>網段</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="destinations"></tbody></table></div><div><h3>協定</h3><table><thead><tr><th>協定</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="protocols"></tbody></table></div><div><h3>TCP 旗標</h3><p>NetFlow/IPFIX 顯示含此旗標的整條 flow 流量，非精確旗標封包率；多個旗標可重複計入。sFlow 依抽樣封包估算。</p><table><thead><tr><th>旗標</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="flags"></tbody></table></div></div>
+<div class="columns"><div><h3>目的網段</h3><table><thead><tr><th>網段</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="destinations"></tbody></table></div><div><h3>協定</h3><table><thead><tr><th>協定</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="protocols"></tbody></table></div></div>
+<h3>TCP 封包組合</h3><p>每個封包依完整旗標組合只計一次。合法／非法依下方 15 種允許組合判定，不等同完整 TCP 協定或連線狀態驗證；未列入清單的擴充也會標成非法（依清單）。只使用 sFlow 封包取樣。</p><div class="table-scroll"><table><thead><tr><th>組合</th><th>判定</th><th>參考階段</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="flags"></tbody></table></div>
+<h3>NetFlow 累積組合</h3><p>以下是整條 flow 的累積旗標，不代表同一封包的組合。只比對是否列入清單，不判定單包合法性；每筆 flow 只計入一組。</p><div class="table-scroll"><table><thead><tr><th>累積組合</th><th>來源</th><th>清單比對</th><th>單包判定</th><th>Flow 頻寬</th><th>Flow 封包／秒</th></tr></thead><tbody id="flowFlags"></tbody></table></div>
+<details><summary>旗標組合規則（15 種）</summary><p>完全相符才列為合法（依清單）；不依據此清單自動封鎖或宣告路由。</p><table><thead><tr><th>組合</th><th>參考階段</th><th>說明</th></tr></thead><tbody id="flagRules"></tbody></table></details>
 </section>
 <section><h2>GoBGP 狀態</h2><p id="bgpStatus">讀取中…</p><p>「已宣告」表示路由已加入 GoBGP；實際流量處置仍取決於鄰居的 Community 政策。</p><table><thead><tr><th>鄰居</th><th>ASN</th><th>連線狀態</th></tr></thead><tbody id="peers"></tbody></table></section>
 <section><h2>路由控制</h2><p id="modeNotice"></p>
