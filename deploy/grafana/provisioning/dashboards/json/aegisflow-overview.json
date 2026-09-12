@@ -671,255 +671,6 @@
       "type": "timeseries"
     },
     {
-      "id": 14,
-      "type": "text",
-      "title": "TCP 組合說明",
-      "gridPos": {
-        "h": 4,
-        "w": 24,
-        "x": 0,
-        "y": 23
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "**封包組合**只統計 sFlow 封包取樣，每個封包只算一組；15 種允許組合完全相符為 **合法（依清單）**，其他為 **非法（依清單）**。這不是完整 TCP 協定驗證，也不會自動封鎖。\n\n**NetFlow 累積組合**另列於下方，不能推定單一封包的旗標或合法性。若設備只送 NetFlow，上方封包組合圖顯示無資料是正常的。所有圖使用新組合指標，不混入舊的拆分旗標歷史資料。"
-      }
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "aegisflow-prometheus"
-      },
-      "description": "sFlow 封包取樣：每個樣本按完整旗標組合只計入一類，依取樣倍率估算。15 種清單完全相符為合法（依清單），其餘為非法（依清單）；這是內部規則，不是完整 TCP 協定／連線狀態驗證。缺少標頭為資料不足。只選查詢終點近 5 分鐘的前 8 組，隨重新整理更新，整張圖最多 8 條。無 sFlow TCP 樣本時不顯示 NetFlow 替代數據。",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 3,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "suffix:bps"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*非法（依清單）.*"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 27
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "13.2.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "aegisflow-prometheus"
-          },
-          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"packet\"}[5m])) * 8) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"packet\"}[5m] @ end())))",
-          "legendFormat": "{{combination}} · {{classification}}",
-          "refId": "A"
-        }
-      ],
-      "title": "TCP 封包組合頻寬",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "aegisflow-prometheus"
-      },
-      "description": "sFlow 封包取樣：每個樣本按完整旗標組合只計入一類，依取樣倍率估算。15 種清單完全相符為合法（依清單），其餘為非法（依清單）；這是內部規則，不是完整 TCP 協定／連線狀態驗證。缺少標頭為資料不足。只選查詢終點近 5 分鐘的前 8 組，隨重新整理更新，整張圖最多 8 條。無 sFlow TCP 樣本時不顯示 NetFlow 替代數據。",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 4,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "suffix:pps"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*非法（依清單）.*"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 27
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "max"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "13.2.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "aegisflow-prometheus"
-          },
-          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"packet\"}[5m]))) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"packet\"}[5m] @ end())))",
-          "legendFormat": "{{combination}} · {{classification}}",
-          "refId": "A"
-        }
-      ],
-      "title": "TCP 封包組合速率",
-      "type": "timeseries"
-    },
-    {
       "datasource": {
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
@@ -990,8 +741,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "red",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -1002,7 +753,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 36
+        "y": 23
       },
       "id": 12,
       "options": {
@@ -1107,8 +858,8 @@
               {
                 "id": "color",
                 "value": {
-                  "mode": "fixed",
-                  "fixedColor": "red"
+                  "fixedColor": "red",
+                  "mode": "fixed"
                 }
               }
             ]
@@ -1119,7 +870,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 36
+        "y": 23
       },
       "id": 13,
       "options": {
@@ -1178,5 +929,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 11
+  "version": 12
 }
