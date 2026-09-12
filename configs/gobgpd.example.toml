@@ -1,0 +1,23 @@
+# Example only. Replace ASN/router-id and configure neighbors before live use.
+# This file starts an isolated daemon with no BGP listener and no neighbors.
+[global.config]
+  as = 65000
+  router-id = "192.0.2.254"
+  port = -1
+
+[global.apply-policy.config]
+  default-import-policy = "reject-route"
+  default-export-policy = "reject-route"
+
+# Enable a real neighbor only after replacing these values and configuring
+# prefix/community export policies appropriate to your network.
+# [[neighbors]]
+#   [neighbors.config]
+#     neighbor-address = "192.0.2.1"
+#     peer-as = 65001
+#   [[neighbors.afi-safis]]
+#     [neighbors.afi-safis.config]
+#       afi-safi-name = "ipv4-unicast"
+#   [[neighbors.afi-safis]]
+#     [neighbors.afi-safis.config]
+#       afi-safi-name = "ipv6-unicast"

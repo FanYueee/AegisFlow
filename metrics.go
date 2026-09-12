@@ -49,12 +49,12 @@ var (
 
 	flowTCPFlagBytesTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "flow_tcp_flag_bytes_total",
-		Help: "Total bytes seen per individual TCP flag (a packet with multiple flags set counts toward each).",
+		Help: "Sampling-adjusted bytes in flows or packet samples reporting each TCP flag; NetFlow/IPFIX counts entire flows, not exact per-flag packet bytes. Flags overlap.",
 	}, []string{"flag"})
 
 	flowTCPFlagPacketsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "flow_tcp_flag_packets_total",
-		Help: "Total packets seen per individual TCP flag (a packet with multiple flags set counts toward each).",
+		Help: "Sampling-adjusted packets in flows or packet samples reporting each TCP flag; NetFlow/IPFIX counts entire flows, not exact per-flag packets. Flags overlap.",
 	}, []string{"flag"})
 )
 
@@ -150,6 +150,8 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 			sourceType, inIf, outIf, proto, pm.Bytes, pm.Packets, pm.SamplingRate, net.IP(pm.SrcAddr), net.IP(pm.DstAddr))
 	}
 
+	liveObserver.Record(dstCIDR(net.IP(pm.DstAddr)), proto, pm.TcpFlags, bytes, packets)
+
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(bytes)
 	flowPacketsTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(packets)
 	flowSamplesTotal.WithLabelValues(sourceType, samplerAddr.String()).Inc()
@@ -159,6 +161,8 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 		flowDstCIDRPacketsTotal.WithLabelValues(cidr).Add(packets)
 	}
 
+	// NetFlow/IPFIX flags are flow-wide unions. Attribute full flow volume
+	// to each present bit; this is not an exact count of flagged packets.
 	if proto == "tcp" {
 		for _, f := range tcpFlagBits {
 			if pm.TcpFlags&f.mask != 0 {

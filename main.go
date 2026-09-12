@@ -5,11 +5,16 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/netsampler/goflow2/v2/decoders/netflow"
 	"github.com/netsampler/goflow2/v2/decoders/sflow"
@@ -20,6 +25,8 @@ import (
 var (
 	sflowAddr   = flag.String("sflow-listen", ":6343", "UDP address to listen for sFlow on")
 	netflowAddr = flag.String("netflow-listen", ":2055", "UDP address to listen for NetFlow v9/IPFIX on")
+	uiAddr      = flag.String("ui-listen", ":8080", "Internal observation/control UI address (no authentication)")
+	controlFile = flag.String("control-state", "data/control.json", "Persistent BGP control state")
 	metricsAddr = flag.String("metrics-listen", ":2112", "HTTP address to expose Prometheus metrics on")
 
 	// netflowSamplingRate is applied to NetFlow/IPFIX flows that don't report
@@ -58,12 +65,34 @@ func (s *templateStore) get(key string) netflow.NetFlowTemplateSystem {
 	return ts
 }
 
+var liveObserver = newObserver()
+
 func main() {
 	flag.Parse()
-
+	control, err := newController(*controlFile)
+	if err != nil {
+		log.Fatalf("control state: %v", err)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	go liveObserver.Run(ctx)
+	go control.Run(ctx)
+	ui := uiServer(*uiAddr, control, liveObserver)
+	go func() {
+		log.Printf("control UI on %s", *uiAddr)
+		if err := ui.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("control UI: %v", err)
+		}
+	}()
 	go serveMetrics(*metricsAddr)
 	go runSFlowCollector(*sflowAddr)
-	runNetFlowCollector(*netflowAddr)
+	go runNetFlowCollector(*netflowAddr)
+	<-ctx.Done()
+	shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_ = ui.Shutdown(shutdown)
+	// Routes remain in the external GoBGP daemon; persisted expiry/reconciliation
+	// resumes on restart. Shutting down the collector does not withdraw other RIBs.
 }
 
 func serveMetrics(addr string) {

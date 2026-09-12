@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AegisFlow 控制台</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body>
+<header><h1>AegisFlow 控制台</h1><a id="grafana" target="_blank" rel="noopener">Grafana 詳細圖表 ↗</a></header>
+<p id="connection" role="status">連線中…</p><p id="message" role="alert" hidden></p>
+<section><h2>流量觀察</h2><p>每秒更新，顯示近 5 秒平均；流量依設備取樣倍率估算。圖表保留本次啟動後近 5 分鐘。</p>
+<div class="stats"><div>總頻寬<strong id="bps">—</strong></div><div>每秒封包<strong id="pps">—</strong></div><div>每秒樣本<strong id="samples">—</strong></div><div>最後收件<strong id="lastFlow">—</strong></div></div>
+<p id="overflow" hidden></p>
+<div class="columns"><div><h3>頻寬</h3><canvas id="bandwidth" width="640" height="180" aria-label="近五分鐘頻寬趨勢" role="img"></canvas></div><div><h3>封包</h3><canvas id="packets" width="640" height="180" aria-label="近五分鐘封包速率趨勢" role="img"></canvas></div></div>
+<div class="columns"><div><h3>目的網段</h3><table><thead><tr><th>網段</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="destinations"></tbody></table></div><div><h3>協定</h3><table><thead><tr><th>協定</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="protocols"></tbody></table></div><div><h3>TCP 旗標</h3><p>NetFlow/IPFIX 顯示含此旗標的整條 flow 流量，非精確旗標封包率；多個旗標可重複計入。sFlow 依抽樣封包估算。</p><table><thead><tr><th>旗標</th><th>頻寬</th><th>封包／秒</th></tr></thead><tbody id="flags"></tbody></table></div></div>
+</section>
+<section><h2>GoBGP 狀態</h2><p id="bgpStatus">讀取中…</p><p>「已宣告」表示路由已加入 GoBGP；實際流量處置仍取決於鄰居的 Community 政策。</p><table><thead><tr><th>鄰居</th><th>ASN</th><th>連線狀態</th></tr></thead><tbody id="peers"></tbody></table></section>
+<section><h2>路由控制</h2><p id="modeNotice"></p>
+<form id="routeForm"><div class="fields"><label>目的網段<input name="prefix" placeholder="203.0.113.1/32" required></label><label>Next hop<input name="next_hop" placeholder="192.0.2.1" required></label><label>Community<input name="communities" placeholder="65000:666，可逗號分隔" required></label><label>到期撤回（秒）<input name="ttl" type="number" min="1" max="86400" value="300" required></label><label>備註<input name="note" maxlength="256" placeholder="處置原因"></label></div><button type="submit" id="announce">模擬宣告</button></form>
+<div class="table-scroll"><table><thead><tr><th>目的網段</th><th>Next hop</th><th>Community</th><th>模式</th><th>狀態</th><th>到期時間</th><th>備註／錯誤</th><th>操作</th></tr></thead><tbody id="routes"></tbody></table></div>
+</section>
+<section><h2>連線設定</h2><form id="settingsForm"><div class="fields"><label>模式<select name="mode"><option value="simulation">模擬（不發送 BGP）</option><option value="live">實際（發送 BGP）</option></select></label><label>GoBGP 位址<input name="endpoint" value="127.0.0.1:50051" required></label><label class="wide">允許操作網段<textarea name="allowed_prefixes" rows="2" placeholder="例如 203.0.113.0/24，每行一組或逗號分隔"></textarea></label></div><p>模擬與實際模式皆需設定允許網段。切換模式或連線前，請先撤回操作中的路由。</p><button type="submit">儲存設定</button></form></section>
+<section><h2>操作紀錄</h2><table><thead><tr><th>時間</th><th>操作</th><th>目的網段</th><th>模式</th><th>結果</th></tr></thead><tbody id="events"></tbody></table></section>
+</body></html>

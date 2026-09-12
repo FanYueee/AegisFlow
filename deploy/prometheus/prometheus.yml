@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: aegisflow
+    static_configs:
+      # aegisflow runs directly on the host (not in a container), so
+      # Prometheus reaches it via the docker-added host gateway alias.
+      - targets: ["host.docker.internal:2112"]

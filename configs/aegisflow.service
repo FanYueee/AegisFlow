@@ -1,0 +1,18 @@
+[Unit]
+Description=AegisFlow collector and internal control UI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/AegisFlow
+ExecStart=/home/ubuntu/AegisFlow/aegisflow -ui-listen :8080 -control-state /home/ubuntu/AegisFlow/data/control.json
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
