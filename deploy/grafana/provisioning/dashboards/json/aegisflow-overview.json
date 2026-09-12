@@ -780,7 +780,7 @@
             "uid": "aegisflow-prometheus"
           },
           "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"flow\"}[5m])) * 8) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"flow\"}[5m] @ end())))",
-          "legendFormat": "{{combination}} · {{classification}}",
+          "legendFormat": "{{combination}}",
           "refId": "A"
         }
       ],
@@ -897,11 +897,11 @@
             "uid": "aegisflow-prometheus"
           },
           "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"flow\"}[5m]))) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"flow\"}[5m] @ end())))",
-          "legendFormat": "{{combination}} · {{classification}}",
+          "legendFormat": "{{combination}}",
           "refId": "A"
         }
       ],
-      "title": "NetFlow 累積組合封包率",
+      "title": "tcp flag",
       "type": "timeseries"
     }
   ],
@@ -929,5 +929,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 12
+  "version": 13
 }
