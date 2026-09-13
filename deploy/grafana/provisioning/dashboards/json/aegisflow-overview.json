@@ -82,10 +82,10 @@
         }
       },
       "gridPos": {
-        "x": 0,
-        "y": 0,
+        "h": 9,
         "w": 12,
-        "h": 9
+        "x": 0,
+        "y": 0
       },
       "id": 14,
       "options": {
@@ -111,7 +111,7 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total[10s])) * 8)",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\"}[10s])) * 8)",
           "interval": "1s",
           "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
@@ -182,10 +182,10 @@
         }
       },
       "gridPos": {
-        "x": 12,
-        "y": 0,
+        "h": 9,
         "w": 12,
-        "h": 9
+        "x": 12,
+        "y": 0
       },
       "id": 15,
       "options": {
@@ -211,7 +211,7 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total[10s])))",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\"}[10s])))",
           "interval": "1s",
           "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
@@ -1144,52 +1144,52 @@
         "type": "custom"
       },
       {
-        "name": "interface",
-        "label": "介面",
-        "type": "query",
+        "allValue": ".*",
+        "current": {
+          "text": "netflow9@172.30.10.1@15",
+          "value": "netflow9@172.30.10.1@15"
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "aegisflow-prometheus"
         },
+        "definition": "label_values(flow_interface_bytes_total, interface_key)",
+        "includeAll": true,
+        "label": "介面",
+        "multi": false,
+        "name": "interface",
+        "options": [],
         "query": {
           "query": "label_values(flow_interface_bytes_total, interface_key)",
           "refId": "interface"
         },
-        "definition": "label_values(flow_interface_bytes_total, interface_key)",
         "refresh": 1,
         "sort": 1,
-        "multi": false,
-        "includeAll": true,
-        "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "options": []
+        "type": "query"
       },
       {
-        "name": "direction",
-        "label": "方向",
-        "type": "custom",
-        "query": "IN,OUT",
         "current": {
           "text": "IN",
           "value": "IN"
         },
+        "includeAll": false,
+        "label": "方向",
+        "multi": false,
+        "name": "direction",
         "options": [
           {
+            "selected": true,
             "text": "IN",
-            "value": "IN",
-            "selected": true
+            "value": "IN"
           },
           {
+            "selected": false,
             "text": "OUT",
-            "value": "OUT",
-            "selected": false
+            "value": "OUT"
           }
         ],
-        "multi": false,
-        "includeAll": false
+        "query": "IN,OUT",
+        "type": "custom"
       }
     ]
   },
@@ -1214,5 +1214,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 23
+  "version": 24
 }

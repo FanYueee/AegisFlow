@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync"
 	"syscall"
 	"time"
@@ -74,8 +75,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("control state: %v", err)
 	}
+	if err := control.RequireLive(); err != nil {
+		log.Fatalf("control mode: %v", err)
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	rules, err := newRuleEngine(filepath.Join(filepath.Dir(*controlFile), "rules.json"), control)
+	if err != nil {
+		log.Fatalf("rule state: %v", err)
+	}
+	liveRules.Store(rules)
+	go rules.Run(ctx)
 	go liveObserver.Run(ctx)
 	go control.Run(ctx)
 	ui := uiServer(*uiAddr, control, liveObserver)

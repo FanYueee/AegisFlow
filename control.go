@@ -32,6 +32,7 @@ type RouteRequest struct {
 }
 type Route struct {
 	RouteRequest
+	RuleID     string    `json:"rule_id,omitempty"`
 	ID         string    `json:"id"`
 	Identifier uint32    `json:"identifier"`
 	UUID       []byte    `json:"uuid,omitempty"`
@@ -54,6 +55,7 @@ type ControlState struct {
 	Events []Event       `json:"events"`
 }
 type Controller struct {
+	requireLive      bool
 	mu               sync.Mutex
 	state            ControlState
 	path             string
@@ -88,8 +90,8 @@ func newController(path string) (*Controller, error) {
 	return c, nil
 }
 func validateConfig(c ControlConfig) error {
-	if c.Mode != "simulation" && c.Mode != "live" {
-		return errors.New("模式需為 simulation 或 live")
+	if c.Mode != "simulation" && c.Mode != "live" && c.Mode != "unconfigured" {
+		return errors.New("模式需為 simulation、unconfigured 或 live")
 	}
 	host, port, e := net.SplitHostPort(c.Endpoint)
 	if e != nil || host == "" {
@@ -212,6 +214,9 @@ func terminal(state string) bool {
 func (c *Controller) Configure(cfg ControlConfig) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	if c.requireLive && cfg.Mode != "live" {
+		return errors.New("請設定正式 GoBGP 連線")
+	}
 	if e := validateConfig(cfg); e != nil {
 		return e
 	}
@@ -252,9 +257,35 @@ func (c *Controller) Configure(cfg ControlConfig) error {
 	return c.save()
 }
 func (c *Controller) Announce(req RouteRequest) (*Route, error) {
+	return c.announce(req, "")
+}
+
+// Rule actions always use the real, configured GoBGP backend.
+func (c *Controller) AnnounceRule(req RouteRequest, ruleID string) (*Route, error) {
+	if ruleID == "" {
+		return nil, errors.New("規則 ID 不可空白")
+	}
+	return c.announce(req, ruleID)
+}
+func (c *Controller) announce(req RouteRequest, ruleID string) (*Route, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if e := validateRoute(req, c.state.Config); e != nil {
+	cfg := c.state.Config
+	if cfg.Mode == "unconfigured" || (c.requireLive && cfg.Mode != "live") {
+		return nil, errors.New("尚未設定 Core／GoBGP 正式連線")
+	}
+	if ruleID != "" {
+		for _, existing := range c.state.Routes {
+			if existing.RuleID == ruleID && !terminal(existing.State) {
+				cp := *existing
+				return &cp, nil
+			}
+		}
+		if cfg.Mode != "live" {
+			return nil, errors.New("尚未設定 Core／GoBGP 正式連線")
+		}
+	}
+	if e := validateRoute(req, cfg); e != nil {
 		return nil, e
 	}
 	active := 0
@@ -274,7 +305,7 @@ func (c *Controller) Announce(req RouteRequest) (*Route, error) {
 		return nil, e
 	}
 	now := time.Now().UTC()
-	r := &Route{RouteRequest: req, ID: hex.EncodeToString(buf[:]), Identifier: binary.BigEndian.Uint32(buf[:4]) | 0x80000000, Mode: c.state.Config.Mode, State: "pending", Created: now, Expires: now.Add(time.Duration(req.TTL) * time.Second)}
+	r := &Route{RouteRequest: req, RuleID: ruleID, ID: hex.EncodeToString(buf[:]), Identifier: binary.BigEndian.Uint32(buf[:4]) | 0x80000000, Mode: cfg.Mode, State: "pending", Created: now, Expires: now.Add(time.Duration(req.TTL) * time.Second)}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
 	if r.Mode == "live" {
@@ -468,4 +499,43 @@ func (c *Controller) Snapshot() any {
 		PersistenceError string  `json:"persistence_error,omitempty"`
 	}{c.state, c.bgp, c.persistenceError})
 	return json.RawMessage(data)
+}
+
+// Rules only reconcile routes they own. Called from the action worker, never
+// the flow receiver, because the controller may be waiting on gRPC.
+func (c *Controller) RuleRoutes() map[string]Route {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	result := map[string]Route{}
+	for _, r := range c.state.Routes {
+		if r.RuleID != "" {
+			cp := *r
+			cp.Communities = append([]string{}, r.Communities...)
+			result[r.RuleID] = cp
+		}
+	}
+	return result
+}
+
+func (c *Controller) RuleReadiness() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.state.Config.Mode != "live" || c.backend == nil {
+		return "尚未設定 Core／GoBGP 正式連線"
+	}
+	if !c.bgp.Connected {
+		return "GoBGP 尚未連線"
+	}
+	return ""
+}
+
+func (c *Controller) RequireLive() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.requireLive = true
+	if c.state.Config.Mode == "simulation" {
+		c.state.Config.Mode = "unconfigured"
+		return c.save()
+	}
+	return nil
 }

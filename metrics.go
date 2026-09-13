@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"net/netip"
 	"os"
 	"strconv"
 	"time"
@@ -142,6 +143,10 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 		flags = observedFlags[0]
 	}
 	recordInterfaces(sourceType, samplerAddr, pm.InIf, pm.OutIf, proto, dstCIDR(net.IP(pm.DstAddr)), flags, bytes, packets)
+	if engine := liveRules.Load(); engine != nil {
+		dst, _ := netip.AddrFromSlice(pm.DstAddr)
+		engine.Observe(RuleFlow{Received: time.Now(), Source: sourceType, Exporter: samplerAddr.String(), Protocol: proto, InIf: pm.InIf, OutIf: pm.OutIf, Destination: dst, Flags: flags, Bytes: bytes, Packets: packets})
+	}
 	liveObserver.Record(dstCIDR(net.IP(pm.DstAddr)), proto, flags, bytes, packets, sourceType)
 
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(bytes)

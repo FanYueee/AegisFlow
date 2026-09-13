@@ -5,3 +5,5 @@
 .grafana-stats,.grafana-charts{display:grid;gap:12px;margin-top:16px;grid-template-columns:repeat(2,minmax(0,1fr))}.grafana-stats{grid-template-columns:repeat(4,minmax(0,1fr))}.grafana-stats iframe,.grafana-charts iframe{display:block;width:100%;border:1px solid #dce0e5;height:360px}.grafana-stats iframe{height:150px}@media(max-width:800px){.grafana-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.grafana-charts{grid-template-columns:minmax(0,1fr)}}
 
 #interfaceButtons{display:flex;gap:8px;flex-wrap:wrap}#interfaceDetails[hidden]{display:none}
+
+.rule-preview{width:110px}#ruleRows td:last-child{min-width:260px}#ruleRows button{margin:3px}

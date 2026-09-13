@@ -18,6 +18,7 @@ var webFiles embed.FS
 
 func controlHandler(c *Controller, o *Observer) http.Handler {
 	mux := http.NewServeMux()
+	registerRuleHandlers(mux)
 	mux.HandleFunc("GET /api/interfaces", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, knownInterfaces()) })
 	mux.HandleFunc("GET /api/tcp-flag-rules", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, tcpFlagRules) })
 	mux.HandleFunc("GET /api/state", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, c.Snapshot()) })
@@ -25,6 +26,10 @@ func controlHandler(c *Controller, o *Observer) http.Handler {
 	mux.HandleFunc("PUT /api/settings", func(w http.ResponseWriter, r *http.Request) {
 		var cfg ControlConfig
 		if !readJSON(w, r, &cfg) {
+			return
+		}
+		if engine := liveRules.Load(); engine != nil && engine.AnyEnabled() {
+			writeJSON(w, 400, map[string]string{"error": "請先停用所有規則，再修改 GoBGP 連線設定"})
 			return
 		}
 		if e := c.Configure(cfg); e != nil {
@@ -62,7 +67,7 @@ func controlHandler(c *Controller, o *Observer) http.Handler {
 		if name == "/" {
 			name = "/index.html"
 		}
-		if name != "/index.html" && name != "/app.js" && name != "/style.css" {
+		if name != "/index.html" && name != "/app.js" && name != "/style.css" && name != "/rules.js" {
 			http.NotFound(w, r)
 			return
 		}
