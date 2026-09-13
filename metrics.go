@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"time"
 
 	protoproducer "github.com/netsampler/goflow2/v2/producer/proto"
 	"github.com/prometheus/client_golang/prometheus"
@@ -108,6 +109,8 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 	if !ok || pm == nil {
 		return
 	}
+
+	recordIngestTiming(sourceType, pm.TimeFlowStartNs, pm.TimeFlowEndNs, time.Now())
 
 	samplerAddr := net.IP(pm.SamplerAddress)
 	if samplerAddr == nil {
