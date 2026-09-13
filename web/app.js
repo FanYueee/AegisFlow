@@ -17,27 +17,16 @@ $('routeForm').addEventListener('submit',e=>{e.preventDefault();const f=e.curren
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;perform(f.querySelector('button'),()=>api('/api/settings','PUT',{mode:'live',endpoint:f.elements.endpoint.value.trim(),allowed_prefixes:f.elements.allowed_prefixes.value.split(/[\s,]+/).filter(Boolean)}),'設定已儲存')});
 const grafana=new URL(location.href);grafana.port='3000';grafana.pathname='/d/aegisflow-overview';grafana.search='';grafana.hash='';$('grafana').href=grafana.href;
 async function pollControl(){try{renderControl(await api('/api/state'))}catch(e){$('bgpStatus').textContent='控制狀態更新失敗：'+e.message}finally{setTimeout(pollControl,3000)}}
-const panels=[[14,'介面頻寬'],[15,'介面封包'],[1,'總頻寬'],[2,'每秒封包'],[3,'累計流量'],[4,'每秒樣本'],[5,'protocol 頻寬'],[6,'protocol 封包'],[8,'目的網段頻寬'],[9,'目的網段封包'],[12,'tcp flag 頻寬'],[13,'tcp flag']];
+const panels=[[14,'頻寬'],[15,'封包'],[1,'總頻寬'],[2,'每秒封包'],[3,'累計流量'],[4,'每秒樣本'],[5,'protocol 頻寬'],[6,'protocol 封包'],[8,'目的網段頻寬'],[9,'目的網段封包'],[12,'tcp flag 頻寬'],[13,'tcp flag']];
 for(const [id,title] of panels){const frame=document.createElement('iframe');frame.title=title;frame.dataset.panelId=id;frame.referrerPolicy='same-origin';frame.loading=id>=14?'eager':'lazy';$(id>=14?'grafanaOverview':id<=4?'grafanaStats':'grafanaCharts').append(frame)}
 function updatePanels(tcpOnly=false){
- const selected=$('interfaceSelect').value;
- $('interfaceDetails').hidden=!selected;
- $('interfaceHeading').textContent=selected?$('interfaceSelect').selectedOptions[0].textContent+' · '+$('directionSelect').value:'';
- const params=new URLSearchParams({orgId:'1',from:$('chartRange').value,to:'now',refresh:'5s','var-tcp_scope':$('tcpScope').value,'var-interface':selected||'$__all','var-direction':$('directionSelect').value,theme:'light'});
+ $('interfaceHeading').textContent=$('directionSelect').value+' 詳細資料';
+ const params=new URLSearchParams({orgId:'1',from:$('chartRange').value,to:'now',refresh:'5s','var-tcp_scope':$('tcpScope').value,'var-direction':$('directionSelect').value,theme:'light'});
  const dashboard=new URL(grafana);dashboard.search=params.toString();$('grafana').href=dashboard.href;
- for(const frame of document.querySelectorAll('[data-panel-id]')){const id=Number(frame.dataset.panelId);if(tcpOnly&&![12,13].includes(id))continue;if(id<14&&!selected){frame.removeAttribute('src');continue}const url=new URL(dashboard);url.pathname='/d-solo/aegisflow-overview';url.searchParams.set('panelId',id);if(id>=14){url.searchParams.set('var-interface',selected||'$__all');url.searchParams.set('var-direction','IN')}if(frame.getAttribute('src')!==url.href)frame.src=url.href}
+ for(const frame of document.querySelectorAll('[data-panel-id]')){const id=Number(frame.dataset.panelId);if(tcpOnly&&![12,13].includes(id))continue;const url=new URL(dashboard);url.pathname='/d-solo/aegisflow-overview';url.searchParams.set('panelId',id);if(id>=14)url.searchParams.set('var-direction','IN');if(frame.getAttribute('src')!==url.href)frame.src=url.href}
 }
-let interfaceSignature='',initialInterface=new URLSearchParams(location.search).get('interface')||'netflow9@172.30.10.1@15';
 const initialDirection=new URLSearchParams(location.search).get('direction');if(['IN','OUT'].includes(initialDirection))$('directionSelect').value=initialDirection;
-async function pollInterfaces(){try{
- const rows=await api('/api/interfaces');const signature=JSON.stringify(rows);
- if(signature!==interfaceSignature){interfaceSignature=signature;const select=$('interfaceSelect'),current=select.value;select.replaceChildren(new Option('所有介面總覽',''));$('interfaceButtons').replaceChildren();
- for(const row of rows){const label=row.exporter+' / '+(row.index==='0'?'未知介面 (0)':'介面 '+row.index)+' · '+row.source;select.add(new Option(label,row.key));const button=document.createElement('button');button.type='button';button.textContent=label;button.addEventListener('click',()=>{select.value=row.key;updatePanels();$('interfaceDetails').scrollIntoView({behavior:'smooth',block:'start'})});$('interfaceButtons').append(button)}
- if(rows.some(r=>r.key===current))select.value=current;else if(initialInterface&&rows.some(r=>r.key===initialInterface)){select.value=initialInterface;initialInterface=null}updatePanels()}
- $('interfaceStatus').textContent=rows.length?'點選介面查看詳細資料；IN／OUT 以設備介面為準。':'等待設備回報介面。';
- }catch(e){$('interfaceStatus').textContent='介面清單讀取失敗：'+e.message}finally{setTimeout(pollInterfaces,5000)}}
 $('chartRange').addEventListener('change',()=>updatePanels());
 $('tcpScope').addEventListener('change',()=>updatePanels(true));
-$('interfaceSelect').addEventListener('change',()=>updatePanels());
 $('directionSelect').addEventListener('change',()=>updatePanels());
-updatePanels();pollInterfaces();pollControl();
+updatePanels();pollControl();

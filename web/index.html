@@ -6,9 +6,9 @@
 <section><h2>流量觀察</h2>
 <div class="fields"><label>時間範圍<select id="chartRange"><option value="now-5m">近 5 分鐘</option><option value="now-15m" selected>近 15 分鐘</option><option value="now-1h">近 1 小時</option><option value="now-6h">近 6 小時</option><option value="now-24h">近 24 小時</option></select></label><label>TCP 資料來源<select id="tcpScope"><option value="flow">NetFlow 累積</option><option value="packet">sFlow 封包取樣</option></select></label></div>
 <div id="grafanaOverview" class="grafana-charts"></div>
-<div class="fields"><label>介面<select id="interfaceSelect"><option value="">所有介面總覽</option></select></label><label>方向<select id="directionSelect"><option value="IN">IN</option><option value="OUT">OUT</option></select></label></div>
-<p id="interfaceStatus" role="status">載入介面…</p><div id="interfaceButtons"></div>
-<div id="interfaceDetails" hidden><h3 id="interfaceHeading"></h3>
+<div class="fields"><label>詳細資料方向<select id="directionSelect"><option value="IN">IN</option><option value="OUT">OUT</option></select></label></div>
+
+<div id="interfaceDetails"><h3 id="interfaceHeading"></h3>
 <div id="grafanaStats" class="grafana-stats"></div>
 <div id="grafanaCharts" class="grafana-charts"></div></div>
 </section>

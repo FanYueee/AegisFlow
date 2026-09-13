@@ -111,13 +111,13 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\"}[10s])) * 8)",
+          "expr": "ceil(sum by (direction) (rate(flow_interface_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\"}[10s])) * 8)",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
-      "title": "介面頻寬",
+      "title": "頻寬",
       "type": "timeseries"
     },
     {
@@ -211,13 +211,13 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\"}[10s])))",
+          "expr": "ceil(sum by (direction) (rate(flow_interface_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
-      "title": "介面封包",
+      "title": "封包",
       "type": "timeseries"
     },
     {
@@ -274,9 +274,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) * 8)",
+          "expr": "ceil(sum by (direction) (rate(flow_interface_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])) * 8)",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
@@ -337,9 +337,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
+          "expr": "ceil(sum by (direction) (rate(flow_interface_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
@@ -400,9 +400,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (increase(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[$__range])))",
+          "expr": "ceil(sum by (direction) (increase(flow_interface_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[$__range])))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
@@ -463,9 +463,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_records_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
+          "expr": "ceil(sum by (direction) (rate(flow_interface_records_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "legendFormat": "{{direction}}",
           "refId": "A"
         }
       ],
@@ -563,9 +563,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction, proto) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) * 8)",
+          "expr": "ceil(sum by (proto) (rate(flow_interface_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])) * 8)",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{proto}}",
+          "legendFormat": "{{proto}}",
           "refId": "A"
         }
       ],
@@ -663,9 +663,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (exporter, interface, interface_key, direction, proto) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
+          "expr": "ceil(sum by (proto) (rate(flow_interface_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{proto}}",
+          "legendFormat": "{{proto}}",
           "refId": "A"
         }
       ],
@@ -763,9 +763,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s] @ end())))) * 8)",
+          "expr": "ceil((sum by (dst_cidr) (rate(flow_interface_dst_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])) and topk(8, sum by (dst_cidr) (rate(flow_interface_dst_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s] @ end())))) * 8)",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{dst_cidr}}",
+          "legendFormat": "{{dst_cidr}}",
           "refId": "A"
         }
       ],
@@ -863,9 +863,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s] @ end())))))",
+          "expr": "ceil((sum by (dst_cidr) (rate(flow_interface_dst_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])) and topk(8, sum by (dst_cidr) (rate(flow_interface_dst_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s] @ end())))))",
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{dst_cidr}}",
+          "legendFormat": "{{dst_cidr}}",
           "refId": "A"
         }
       ],
@@ -981,10 +981,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
           "instant": false,
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{combination}}",
+          "legendFormat": "{{combination}}",
           "range": true,
           "refId": "A"
         }
@@ -1101,10 +1101,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))))",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))))",
           "instant": false,
           "interval": "1s",
-          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{combination}}",
+          "legendFormat": "{{combination}}",
           "range": true,
           "refId": "A"
         }
@@ -1142,30 +1142,6 @@
         ],
         "query": "NetFlow 累積 : flow,sFlow 封包取樣 : packet",
         "type": "custom"
-      },
-      {
-        "allValue": ".*",
-        "current": {
-          "text": "netflow9@172.30.10.1@15",
-          "value": "netflow9@172.30.10.1@15"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "aegisflow-prometheus"
-        },
-        "definition": "label_values(flow_interface_bytes_total, interface_key)",
-        "includeAll": true,
-        "label": "介面",
-        "multi": false,
-        "name": "interface",
-        "options": [],
-        "query": {
-          "query": "label_values(flow_interface_bytes_total, interface_key)",
-          "refId": "interface"
-        },
-        "refresh": 1,
-        "sort": 1,
-        "type": "query"
       },
       {
         "current": {
@@ -1214,5 +1190,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 24
+  "version": 25
 }
