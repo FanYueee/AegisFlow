@@ -7,3 +7,5 @@
 #interfaceButtons{display:flex;gap:8px;flex-wrap:wrap}#interfaceDetails[hidden]{display:none}
 
 .rule-preview{width:110px}#ruleRows td:last-child{min-width:260px}#ruleRows button{margin:3px}
+
+.fields label[hidden]{display:none}.community-editor{margin-top:16px}.community-cards,.community-entry{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.community-card{display:inline-flex;align-items:center;gap:8px;border:1px solid #b6bfc9;border-radius:4px;padding:4px 8px;background:#f5f6f8}.community-card button{margin:0;padding:2px 7px}.community-entry input{max-width:100%;min-width:0}.community-cards:empty{display:none}#ruleCommunityError{color:#b42318;margin:4px 0}#ruleAdvanced{margin-bottom:16px}
