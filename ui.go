@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"mime"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -82,7 +83,16 @@ func controlHandler(c *Controller, o *Observer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+		host, _, err := net.SplitHostPort(r.Host)
+		if err != nil {
+			host = r.Host
+		}
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+		grafanaOrigin := (&url.URL{Scheme: scheme, Host: net.JoinHostPort(host, "3000")}).String()
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-src "+grafanaOrigin+"; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 		// No login, as requested. JSON + same-origin checks stop unrelated websites
 		// from issuing control commands through an operator's browser.
 		if r.Method != "GET" && r.Method != "HEAD" {
