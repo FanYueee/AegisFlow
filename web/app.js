@@ -17,7 +17,13 @@ $('routeForm').addEventListener('submit',e=>{e.preventDefault();const f=e.curren
 $('settingsForm').addEventListener('submit',e=>{e.preventDefault();const f=e.currentTarget;perform(f.querySelector('button'),()=>api('/api/settings','PUT',{mode:f.elements.mode.value,endpoint:f.elements.endpoint.value.trim(),allowed_prefixes:f.elements.allowed_prefixes.value.split(/[\s,]+/).filter(Boolean)}),'設定已儲存')});
 const grafana=new URL(location.href);grafana.port='3000';grafana.pathname='/d/aegisflow-overview';grafana.search='';grafana.hash='';$('grafana').href=grafana.href;
 async function pollControl(){try{renderControl(await api('/api/state'))}catch(e){$('bgpStatus').textContent='控制狀態更新失敗：'+e.message}finally{setTimeout(pollControl,3000)}}
-grafana.search=new URLSearchParams({orgId:'1',from:'now-15m',to:'now',refresh:'5s','var-tcp_scope':'flow',theme:'light',kiosk:'tv'}).toString();
-$('grafanaFallback').href=grafana.href;
-$('grafanaFrame').src=grafana.href;
-pollControl();
+const panels=[[1,'總頻寬'],[2,'每秒封包'],[3,'累計流量'],[4,'每秒樣本'],[5,'protocol 頻寬'],[6,'protocol 封包'],[8,'目的網段頻寬'],[9,'目的網段封包'],[12,'tcp flag 頻寬'],[13,'tcp flag']];
+for(const [id,title] of panels){const frame=document.createElement('iframe');frame.title=title;frame.dataset.panelId=id;frame.referrerPolicy='same-origin';frame.loading=id<=4?'eager':'lazy';$(id<=4?'grafanaStats':'grafanaCharts').append(frame)}
+function updatePanels(tcpOnly=false){
+ const params=new URLSearchParams({orgId:'1',from:$('chartRange').value,to:'now',refresh:'5s','var-tcp_scope':$('tcpScope').value,theme:'light'});
+ const dashboard=new URL(grafana);dashboard.search=params.toString();$('grafana').href=dashboard.href;
+ for(const frame of document.querySelectorAll('[data-panel-id]')){if(tcpOnly&&Number(frame.dataset.panelId)<12)continue;const url=new URL(dashboard);url.pathname='/d-solo/aegisflow-overview';url.searchParams.set('panelId',frame.dataset.panelId);frame.src=url.href}
+}
+$('chartRange').addEventListener('change',()=>updatePanels());
+$('tcpScope').addEventListener('change',()=>updatePanels(true));
+updatePanels();pollControl();

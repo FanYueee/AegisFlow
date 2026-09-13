@@ -3,8 +3,10 @@
 <body>
 <header><h1>AegisFlow 控制台</h1><a id="grafana" target="_blank" rel="noopener">Grafana 詳細圖表 ↗</a></header>
 <p id="message" role="alert" hidden></p>
-<section><h2>流量觀察</h2><p>圖表與數值由 Grafana 提供，可在圖內調整時間範圍及 TCP 資料來源。<a id="grafanaFallback" target="_blank" rel="noopener">另開 Grafana ↗</a></p>
-<iframe id="grafanaFrame" title="Grafana 流量儀表板" referrerpolicy="same-origin"></iframe>
+<section><h2>流量觀察</h2>
+<div class="fields"><label>時間範圍<select id="chartRange"><option value="now-5m">近 5 分鐘</option><option value="now-15m" selected>近 15 分鐘</option><option value="now-1h">近 1 小時</option><option value="now-6h">近 6 小時</option><option value="now-24h">近 24 小時</option></select></label><label>TCP 資料來源<select id="tcpScope"><option value="flow">NetFlow 累積</option><option value="packet">sFlow 封包取樣</option></select></label></div>
+<div id="grafanaStats" class="grafana-stats"></div>
+<div id="grafanaCharts" class="grafana-charts"></div>
 </section>
 <section><h2>GoBGP 狀態</h2><p id="bgpStatus">讀取中…</p><p>「已宣告」表示路由已加入 GoBGP；實際流量處置仍取決於鄰居的 Community 政策。</p><table><thead><tr><th>鄰居</th><th>ASN</th><th>連線狀態</th></tr></thead><tbody id="peers"></tbody></table></section>
 <section><h2>路由控制</h2><p id="modeNotice"></p>
