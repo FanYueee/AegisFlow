@@ -30,7 +30,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 2,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -74,10 +74,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum(rate(flow_bytes_total[10s])) * 8",
+          "expr": "ceil(sum(rate(flow_bytes_total[10s])) * 8)",
+          "interval": "1s",
           "legendFormat": "bandwidth",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "總頻寬",
@@ -93,7 +93,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 4,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -103,7 +103,7 @@
               }
             ]
           },
-          "unit": "suffix:pps"
+          "unit": "count:pps"
         }
       },
       "gridPos": {
@@ -137,10 +137,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum(rate(flow_packets_total[10s]))",
+          "expr": "ceil(sum(rate(flow_packets_total[10s])))",
+          "interval": "1s",
           "legendFormat": "pps",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "每秒封包",
@@ -156,7 +156,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 2,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -166,7 +166,7 @@
               }
             ]
           },
-          "unit": "bytes"
+          "unit": "decbytes"
         }
       },
       "gridPos": {
@@ -200,10 +200,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum(increase(flow_bytes_total[$__range]))",
+          "expr": "ceil(sum(increase(flow_bytes_total[$__range])))",
+          "interval": "1s",
           "legendFormat": "total",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "累計流量",
@@ -219,7 +219,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 1,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -263,10 +263,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum(rate(flow_samples_total[10s]))",
+          "expr": "ceil(sum(rate(flow_samples_total[10s])))",
+          "interval": "1s",
           "legendFormat": "samples/s",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "每秒樣本",
@@ -329,7 +329,8 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "bps",
+          "decimals": 0
         }
       },
       "gridPos": {
@@ -362,10 +363,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum by (proto) (rate(flow_bytes_total[10s])) * 8",
+          "expr": "ceil(sum by (proto) (rate(flow_bytes_total[10s])) * 8)",
+          "interval": "1s",
           "legendFormat": "{{proto}}",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "protocol 頻寬",
@@ -415,7 +416,7 @@
               "mode": "off"
             }
           },
-          "decimals": 4,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -429,7 +430,7 @@
               }
             ]
           },
-          "unit": "suffix:pps"
+          "unit": "count:pps"
         }
       },
       "gridPos": {
@@ -462,10 +463,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "sum by (proto) (rate(flow_packets_total[10s]))",
+          "expr": "ceil(sum by (proto) (rate(flow_packets_total[10s])))",
+          "interval": "1s",
           "legendFormat": "{{proto}}",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "protocol 封包",
@@ -528,7 +529,8 @@
               }
             ]
           },
-          "unit": "bps"
+          "unit": "bps",
+          "decimals": 0
         }
       },
       "gridPos": {
@@ -561,10 +563,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "(sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s] @ end())))) * 8",
+          "expr": "ceil((sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s] @ end())))) * 8)",
+          "interval": "1s",
           "legendFormat": "{{dst_cidr}}",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "目的網段頻寬",
@@ -614,7 +616,7 @@
               "mode": "off"
             }
           },
-          "decimals": 4,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -628,7 +630,7 @@
               }
             ]
           },
-          "unit": "suffix:pps"
+          "unit": "count:pps"
         }
       },
       "gridPos": {
@@ -661,10 +663,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "(sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s] @ end()))))",
+          "expr": "ceil((sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s] @ end())))))",
+          "interval": "1s",
           "legendFormat": "{{dst_cidr}}",
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "目的網段封包",
@@ -714,7 +716,7 @@
               "mode": "off"
             }
           },
-          "decimals": 3,
+          "decimals": 0,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -729,7 +731,7 @@
               }
             ]
           },
-          "unit": "suffix:bps"
+          "unit": "bps"
         },
         "overrides": [
           {
@@ -779,12 +781,12 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s] @ end())))) * 8",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
           "instant": false,
+          "interval": "1s",
           "legendFormat": "{{combination}}",
           "range": true,
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "tcp flag 頻寬",
@@ -834,7 +836,7 @@
               "mode": "off"
             }
           },
-          "decimals": 4,
+          "decimals": 0,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -849,7 +851,7 @@
               }
             ]
           },
-          "unit": "suffix:pps"
+          "unit": "count:pps"
         },
         "overrides": [
           {
@@ -899,12 +901,12 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "(sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s] @ end()))))",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s] @ end())))))",
           "instant": false,
+          "interval": "1s",
           "legendFormat": "{{combination}}",
           "range": true,
-          "refId": "A",
-          "interval": "1s"
+          "refId": "A"
         }
       ],
       "title": "tcp flag",
@@ -964,5 +966,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 20
+  "version": 22
 }
