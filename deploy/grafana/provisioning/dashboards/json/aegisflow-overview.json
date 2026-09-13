@@ -981,7 +981,7 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"flow\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_bytes_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"flow\"}[10s] @ end())))) * 8)",
           "instant": false,
           "interval": "1s",
           "legendFormat": "{{combination}}",
@@ -1101,7 +1101,7 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))))",
+          "expr": "ceil((sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"flow\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_interface_tcp_combination_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\",scope=\"flow\"}[10s] @ end())))))",
           "instant": false,
           "interval": "1s",
           "legendFormat": "{{combination}}",
@@ -1118,31 +1118,6 @@
   "schemaVersion": 42,
   "templating": {
     "list": [
-      {
-        "current": {
-          "text": "NetFlow 累積",
-          "value": "flow"
-        },
-        "hide": 0,
-        "includeAll": false,
-        "label": "TCP 資料來源",
-        "multi": false,
-        "name": "tcp_scope",
-        "options": [
-          {
-            "selected": true,
-            "text": "NetFlow 累積",
-            "value": "flow"
-          },
-          {
-            "selected": false,
-            "text": "sFlow 封包取樣",
-            "value": "packet"
-          }
-        ],
-        "query": "NetFlow 累積 : flow,sFlow 封包取樣 : packet",
-        "type": "custom"
-      },
       {
         "current": {
           "text": "IN",
@@ -1190,5 +1165,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 25
+  "version": 26
 }
