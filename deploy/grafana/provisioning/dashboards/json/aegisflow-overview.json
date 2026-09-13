@@ -28,6 +28,206 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 9
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "aegisflow-prometheus"
+          },
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total[10s])) * 8)",
+          "interval": "1s",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "refId": "A"
+        }
+      ],
+      "title": "介面頻寬",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "aegisflow-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "count:pps"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 9
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "aegisflow-prometheus"
+          },
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total[10s])))",
+          "interval": "1s",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
+          "refId": "A"
+        }
+      ],
+      "title": "介面封包",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "aegisflow-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "decimals": 0,
@@ -47,7 +247,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 9
       },
       "id": 1,
       "options": {
@@ -74,9 +274,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum(rate(flow_bytes_total[10s])) * 8)",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) * 8)",
           "interval": "1s",
-          "legendFormat": "bandwidth",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
         }
       ],
@@ -110,7 +310,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 0
+        "y": 9
       },
       "id": 2,
       "options": {
@@ -137,9 +337,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum(rate(flow_packets_total[10s])))",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "pps",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
         }
       ],
@@ -173,7 +373,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 9
       },
       "id": 3,
       "options": {
@@ -200,9 +400,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum(increase(flow_bytes_total[$__range])))",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (increase(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[$__range])))",
           "interval": "1s",
-          "legendFormat": "total",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
         }
       ],
@@ -236,7 +436,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -263,9 +463,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum(rate(flow_samples_total[10s])))",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction) (rate(flow_interface_records_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "samples/s",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}}",
           "refId": "A"
         }
       ],
@@ -316,6 +516,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -329,15 +530,14 @@
               }
             ]
           },
-          "unit": "bps",
-          "decimals": 0
+          "unit": "bps"
         }
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 5
+        "y": 14
       },
       "id": 5,
       "options": {
@@ -363,9 +563,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (proto) (rate(flow_bytes_total[10s])) * 8)",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction, proto) (rate(flow_interface_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) * 8)",
           "interval": "1s",
-          "legendFormat": "{{proto}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{proto}}",
           "refId": "A"
         }
       ],
@@ -437,7 +637,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 5
+        "y": 14
       },
       "id": 6,
       "options": {
@@ -463,9 +663,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil(sum by (proto) (rate(flow_packets_total[10s])))",
+          "expr": "ceil(sum by (exporter, interface, interface_key, direction, proto) (rate(flow_interface_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])))",
           "interval": "1s",
-          "legendFormat": "{{proto}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{proto}}",
           "refId": "A"
         }
       ],
@@ -516,6 +716,7 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -529,15 +730,14 @@
               }
             ]
           },
-          "unit": "bps",
-          "decimals": 0
+          "unit": "bps"
         }
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 23
       },
       "id": 8,
       "options": {
@@ -563,9 +763,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_bytes_total[10s] @ end())))) * 8)",
+          "expr": "ceil((sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s] @ end())))) * 8)",
           "interval": "1s",
-          "legendFormat": "{{dst_cidr}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{dst_cidr}}",
           "refId": "A"
         }
       ],
@@ -637,7 +837,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 23
       },
       "id": 9,
       "options": {
@@ -663,9 +863,9 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s])) and topk(8, sum by (dst_cidr) (rate(flow_dst_cidr_packets_total[10s] @ end())))))",
+          "expr": "ceil((sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, dst_cidr) (rate(flow_interface_dst_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\"}[10s] @ end())))))",
           "interval": "1s",
-          "legendFormat": "{{dst_cidr}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{dst_cidr}}",
           "refId": "A"
         }
       ],
@@ -755,7 +955,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 32
       },
       "id": 12,
       "options": {
@@ -781,10 +981,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_bytes_total{scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
+          "expr": "ceil((sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_bytes_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))) * 8)",
           "instant": false,
           "interval": "1s",
-          "legendFormat": "{{combination}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{combination}}",
           "range": true,
           "refId": "A"
         }
@@ -875,7 +1075,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 23
+        "y": 32
       },
       "id": 13,
       "options": {
@@ -901,10 +1101,10 @@
             "type": "prometheus",
             "uid": "aegisflow-prometheus"
           },
-          "expr": "ceil((sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s])) and topk(8, sum by (combination, classification) (rate(flow_tcp_flag_combination_packets_total{scope=\"$tcp_scope\"}[10s] @ end())))))",
+          "expr": "ceil((sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s])) and topk by (interface_key, direction) (8, sum by (exporter, interface, interface_key, direction, combination, classification) (rate(flow_interface_tcp_combination_packets_total{interface_key=~\"${interface:regex}\",direction=~\"${direction:regex}\",scope=\"$tcp_scope\"}[10s] @ end())))))",
           "instant": false,
           "interval": "1s",
-          "legendFormat": "{{combination}}",
+          "legendFormat": "{{exporter}} / {{interface}} {{direction}} · {{combination}}",
           "range": true,
           "refId": "A"
         }
@@ -942,6 +1142,54 @@
         ],
         "query": "NetFlow 累積 : flow,sFlow 封包取樣 : packet",
         "type": "custom"
+      },
+      {
+        "name": "interface",
+        "label": "介面",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "aegisflow-prometheus"
+        },
+        "query": {
+          "query": "label_values(flow_interface_bytes_total, interface_key)",
+          "refId": "interface"
+        },
+        "definition": "label_values(flow_interface_bytes_total, interface_key)",
+        "refresh": 1,
+        "sort": 1,
+        "multi": false,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "options": []
+      },
+      {
+        "name": "direction",
+        "label": "方向",
+        "type": "custom",
+        "query": "IN,OUT",
+        "current": {
+          "text": "IN",
+          "value": "IN"
+        },
+        "options": [
+          {
+            "text": "IN",
+            "value": "IN",
+            "selected": true
+          },
+          {
+            "text": "OUT",
+            "value": "OUT",
+            "selected": false
+          }
+        ],
+        "multi": false,
+        "includeAll": false
       }
     ]
   },
@@ -966,5 +1214,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 22
+  "version": 23
 }

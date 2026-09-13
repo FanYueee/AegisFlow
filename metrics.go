@@ -141,6 +141,7 @@ func RecordFlow(msg interface{}, sourceType string, fallbackSampler net.IP, fall
 	if len(observedFlags) > 0 {
 		flags = observedFlags[0]
 	}
+	recordInterfaces(sourceType, samplerAddr, pm.InIf, pm.OutIf, proto, dstCIDR(net.IP(pm.DstAddr)), flags, bytes, packets)
 	liveObserver.Record(dstCIDR(net.IP(pm.DstAddr)), proto, flags, bytes, packets, sourceType)
 
 	flowBytesTotal.WithLabelValues(sourceType, inIf, outIf, proto, srcAs, dstAs).Add(bytes)
