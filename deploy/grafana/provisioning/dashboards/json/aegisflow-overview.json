@@ -25,7 +25,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "Total flow_bytes_total rate, converted to bits/sec.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -88,7 +87,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "Total flow_packets_total rate.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -151,7 +149,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "Total bytes moved over the dashboard's selected time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -214,7 +211,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "Rate of flow messages received across sFlow/NetFlow/IPFIX.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -277,7 +273,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "flow_bytes_total, converted to bits/sec, bucketed into tcp/udp/gre/icmp/other.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -376,7 +371,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "flow_packets_total rate, bucketed into tcp/udp/gre/icmp/other.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -476,7 +470,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "flow_dst_cidr_bytes_total, converted to bits/sec. Destinations are bucketed to /24 (IPv4) or /48 (IPv6).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -575,7 +568,6 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "flow_dst_cidr_packets_total rate. Destinations are bucketed to /24 (IPv4) or /48 (IPv6).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -675,28 +667,11 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "依完整 TCP 旗標組合統計，使用與上方相同的 5 分鐘 rate；動態顯示前 8 組。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
-          "decimals": 3,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "suffix:bps",
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -730,7 +705,23 @@
             "thresholdsStyle": {
               "mode": "off"
             }
-          }
+          },
+          "decimals": 3,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix:bps"
         },
         "overrides": [
           {
@@ -795,28 +786,11 @@
         "type": "prometheus",
         "uid": "aegisflow-prometheus"
       },
-      "description": "依完整 TCP 旗標組合統計，使用與上方相同的 5 分鐘 rate；動態顯示前 8 組。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
-          "decimals": 4,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "suffix:pps",
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -850,7 +824,23 @@
             "thresholdsStyle": {
               "mode": "off"
             }
-          }
+          },
+          "decimals": 4,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "suffix:pps"
         },
         "overrides": [
           {
@@ -964,5 +954,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 17
+  "version": 18
 }
