@@ -6,3 +6,12 @@
 .env
 .env.*
 !.env.example
+
+/README*
+/docs/
+*_test.go
+/test/
+/tests/
+/testdata/
+*.test.*
+*.spec.*
