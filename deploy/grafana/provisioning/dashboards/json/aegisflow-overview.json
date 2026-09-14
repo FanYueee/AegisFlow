@@ -1111,6 +1111,110 @@
       ],
       "title": "tcp flag",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "aegisflow-prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "count:pps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "13.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "aegisflow-prometheus"
+          },
+          "expr": "ceil(sum by (size_range) (rate(flow_interface_mean_packet_size_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s])) and topk(8, sum by (size_range) (rate(flow_interface_mean_packet_size_packets_total{source=\"netflow9\",exporter=\"172.30.10.1\",interface=\"15\",direction=~\"${direction:regex}\"}[10s] @ end()))))",
+          "instant": false,
+          "interval": "1s",
+          "legendFormat": "{{size_range}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "平均包長",
+      "type": "timeseries"
     }
   ],
   "preload": false,
@@ -1165,5 +1269,5 @@
   "timezone": "browser",
   "title": "AegisFlow 總覽",
   "uid": "aegisflow-overview",
-  "version": 26
+  "version": 27
 }

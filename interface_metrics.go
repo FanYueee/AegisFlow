@@ -19,6 +19,7 @@ var (
 	interfaceFlagLabels  = []string{"source", "exporter", "interface", "interface_key", "direction", "scope", "combination", "classification"}
 	interfaceFlagBytes   = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "flow_interface_tcp_combination_bytes_total", Help: "Whole TCP flag combination bytes per interface direction. NetFlow is a flow union, sFlow is a packet sample."}, interfaceFlagLabels)
 	interfaceFlagPackets = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "flow_interface_tcp_combination_packets_total", Help: "Whole TCP flag combination packets per interface direction. A record counts once per direction, never once per bit."}, interfaceFlagLabels)
+	interfaceSizePackets = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "flow_interface_mean_packet_size_packets_total", Help: "Sampling-adjusted packet counts grouped by each record's mean bytes per packet in non-overlapping 100-byte buckets. Not individual NetFlow packet lengths. Zero or missing sizes are unknown."}, append(append([]string{}, interfaceLabels...), "size_range"))
 	interfaceCatalog     = struct {
 		sync.RWMutex
 		entries map[string]InterfaceInfo
@@ -33,7 +34,7 @@ type InterfaceInfo struct {
 }
 
 func init() {
-	prometheus.MustRegister(interfaceBytes, interfacePackets, interfaceRecords, interfaceDstBytes, interfaceDstPackets, interfaceFlagBytes, interfaceFlagPackets)
+	prometheus.MustRegister(interfaceBytes, interfacePackets, interfaceRecords, interfaceDstBytes, interfaceDstPackets, interfaceFlagBytes, interfaceFlagPackets, interfaceSizePackets)
 }
 func knownInterfaces() []InterfaceInfo {
 	interfaceCatalog.RLock()
@@ -50,6 +51,10 @@ func recordInterfaces(source string, exporter net.IP, inIf, outIf uint32, proto,
 	if len(exporter) == 0 {
 		address = "unknown"
 	}
+	sizeRange := "未知"
+	if bucket, ok := meanPacketSizeBucket(bytes, packets); ok {
+		sizeRange = packetSizeLabel(bucket)
+	}
 	for _, v := range []struct {
 		index     uint32
 		direction string
@@ -63,6 +68,10 @@ func recordInterfaces(source string, exporter net.IP, inIf, outIf uint32, proto,
 		interfaceBytes.WithLabelValues(labels...).Add(bytes)
 		interfacePackets.WithLabelValues(labels...).Add(packets)
 		interfaceRecords.WithLabelValues(labels...).Inc()
+		if packets > 0 {
+			sl := append(append([]string{}, labels...), sizeRange)
+			interfaceSizePackets.WithLabelValues(sl...).Add(packets)
+		}
 		if cidr != "" {
 			dl := append(append([]string{}, labels...), cidr)
 			interfaceDstBytes.WithLabelValues(dl...).Add(bytes)

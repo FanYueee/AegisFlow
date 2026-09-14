@@ -9,3 +9,5 @@
 .rule-preview{width:110px}#ruleRows td:last-child{min-width:260px}#ruleRows button{margin:3px}
 
 .fields label[hidden]{display:none}.community-editor{margin-top:16px}.community-box{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:1px solid #b6bfc9;border-radius:3px;padding:8px;margin-top:5px}.community-box:focus-within{outline:2px solid #185cad;outline-offset:1px}.community-cards{display:contents}.community-card{display:inline-flex;align-items:center;gap:8px;border:1px solid #b6bfc9;border-radius:4px;padding:4px 8px;background:#f5f6f8}.community-card button{margin:0;padding:2px 7px}.community-box input{flex:1;max-width:100%;min-width:150px;border:0;outline:none;padding:4px}.community-cards:empty{display:none}#ruleCommunityError{color:#b42318;margin:4px 0}#ruleAdvanced{margin-bottom:16px}
+
+#grafanaCharts iframe[data-panel-id="16"]{grid-column:1 / -1}

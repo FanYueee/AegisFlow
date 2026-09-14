@@ -20,24 +20,25 @@ import (
 )
 
 type Rule struct {
-	ID                string       `json:"id"`
-	Name              string       `json:"name"`
-	Enabled           bool         `json:"enabled"`
-	Source            string       `json:"source"`
-	InterfaceKey      string       `json:"interface_key"`
-	Direction         string       `json:"direction"`
-	Protocol          string       `json:"protocol"`
-	Destination       string       `json:"destination"`
-	TCPFlags          *uint32      `json:"tcp_flags"`
-	Metric            string       `json:"metric"`
-	Threshold         float64      `json:"threshold"`
-	WindowSeconds     int          `json:"window_seconds"`
-	HoldSeconds       int          `json:"hold_seconds"`
-	RecoveryThreshold float64      `json:"recovery_threshold"`
-	RecoverySeconds   int          `json:"recovery_seconds"`
-	CooldownSeconds   int          `json:"cooldown_seconds"`
-	Route             RouteRequest `json:"route"`
-	LastTriggered     time.Time    `json:"last_triggered"`
+	ID                   string       `json:"id"`
+	Name                 string       `json:"name"`
+	Enabled              bool         `json:"enabled"`
+	Source               string       `json:"source"`
+	InterfaceKey         string       `json:"interface_key"`
+	Direction            string       `json:"direction"`
+	Protocol             string       `json:"protocol"`
+	Destination          string       `json:"destination"`
+	TCPFlags             *uint32      `json:"tcp_flags"`
+	MeanPacketSizeBucket *uint32      `json:"mean_packet_size_bucket,omitempty"`
+	Metric               string       `json:"metric"`
+	Threshold            float64      `json:"threshold"`
+	WindowSeconds        int          `json:"window_seconds"`
+	HoldSeconds          int          `json:"hold_seconds"`
+	RecoveryThreshold    float64      `json:"recovery_threshold"`
+	RecoverySeconds      int          `json:"recovery_seconds"`
+	CooldownSeconds      int          `json:"cooldown_seconds"`
+	Route                RouteRequest `json:"route"`
+	LastTriggered        time.Time    `json:"last_triggered"`
 }
 type ruleRuntime struct {
 	Started        time.Time         `json:"-"`
@@ -124,8 +125,11 @@ func validateRule(r Rule) error {
 	if r.TCPFlags != nil && (r.Protocol != "tcp" || *r.TCPFlags > 0xfff) {
 		return errors.New("旗標需為 TCP 完整組合")
 	}
-	if r.Metric != "bps" && r.Metric != "pps" {
-		return errors.New("門檻單位需為 bps 或 pps")
+	if r.MeanPacketSizeBucket != nil && (*r.MeanPacketSizeBucket > packetSizeOverflow || *r.MeanPacketSizeBucket%100 != 0) {
+		return errors.New("平均包長需為 100 Bytes 分組")
+	}
+	if r.Metric != "bps" && r.Metric != "pps" && r.Metric != "packets" {
+		return errors.New("門檻單位需為 bps、pps 或 packets")
 	}
 	if math.IsNaN(r.Threshold) || math.IsInf(r.Threshold, 0) || r.Threshold <= 0 || math.IsNaN(r.RecoveryThreshold) || math.IsInf(r.RecoveryThreshold, 0) || r.RecoveryThreshold < 0 || r.RecoveryThreshold >= r.Threshold {
 		return errors.New("觸發門檻需大於 0，復原門檻需小於觸發門檻且不可為負")
@@ -383,6 +387,12 @@ func (e *RuleEngine) consume(f RuleFlow, now time.Time) {
 		if r.TCPFlags != nil && (!f.Flags.Known || f.Flags.Mask != *r.TCPFlags) {
 			continue
 		}
+		if r.MeanPacketSizeBucket != nil {
+			bucket, known := meanPacketSizeBucket(f.Bytes, f.Packets)
+			if !known || bucket != *r.MeanPacketSizeBucket {
+				continue
+			}
+		}
 		amount := f.Packets
 		if r.Metric == "bps" {
 			amount = f.Bytes * 8
@@ -415,7 +425,10 @@ func (e *RuleEngine) evaluate(now time.Time) {
 				sum += v
 			}
 		}
-		rt.Value = sum / float64(r.WindowSeconds)
+		rt.Value = sum
+		if r.Metric != "packets" {
+			rt.Value /= float64(r.WindowSeconds)
+		}
 		if rt.Busy {
 			rt.Phase = "pending"
 			continue
